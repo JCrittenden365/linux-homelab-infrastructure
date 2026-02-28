@@ -36,6 +36,35 @@ This project was built using a small home lab designed to practice real-world Li
 | Access Method      | SSH remote administration        |
 | Key Authentication | ed25519 public/private key pairs |
 
+## Lab Topology
+
+```
+                Home Network
+                     │
+                     │
+        ┌──────────────────────────┐
+        │ Dell OptiPlex Desktop    │
+        │ (Virtualization Host)    │
+        │                          │
+        │  VirtualBox              │
+        │   ├─ Debian Server       │
+        │   │   SSH / UFW / Fail2Ban
+        │   │   Users: user1, user2, user3
+        │   │
+        │   └─ Ubuntu Server VM    │
+        │       SSH Hardening Lab
+        └──────────────────────────┘
+                     │
+                     │ SSH Key Authentication
+                     │
+           ┌──────────────────────┐
+           │ HP Laptop            │
+           │ SSH Administration   │
+           │ Client               │
+           └──────────────────────┘
+```
+
+
 ### Security Tools Implemented
 
 * SSH key authentication
