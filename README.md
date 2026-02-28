@@ -10,6 +10,20 @@ The goal of this project is to build real-world experience with Linux systems wh
 
 ---
 
+## Skills Demonstrated
+
+Linux system administration  
+SSH configuration and hardening  
+Firewall configuration (UFW)  
+Intrusion detection and prevention (Fail2Ban)  
+User and access management  
+Log analysis and monitoring  
+Cron automation and system maintenance  
+Virtual machine infrastructure (VirtualBox)  
+Network troubleshooting and debugging
+
+---
+
 ## Lab Environment
 
 This project was built using a small home lab designed to practice real-world Linux system administration tasks such as SSH hardening, firewall configuration, intrusion prevention, and automation.
