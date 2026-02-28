@@ -1,4 +1,4 @@
-# # Linux Home Lab Infrastructure
+# Linux Home Lab Infrastructure
 
 ## Overview
 
@@ -119,26 +119,6 @@ Project documentation can be found in the following sections:
 
 ---
 
-## Lab Environment
-
-### Host Machine
-
-Dell OptiPlex Desktop
-
-### Virtualization Platform
-
-VirtualBox
-
-### Servers
-
-**Debian Server**
-Primary administration and security testing environment.
-
-**Ubuntu Server VM**
-Secondary environment used for testing configuration changes, SSH hardening, and automation.
-
----
-
 ## Core Technologies Used
 
 * Linux (Debian & Ubuntu)
@@ -148,19 +128,6 @@ Secondary environment used for testing configuration changes, SSH hardening, and
 * Cron Automation
 * Systemd
 * Linux Log Analysis
-
----
-
-## Skills Demonstrated
-
-* Linux server installation and configuration
-* Secure SSH authentication using ed25519 keys
-* Multi-user access configuration
-* Firewall hardening with UFW
-* Intrusion prevention using Fail2Ban
-* Log analysis and incident detection
-* Scheduled maintenance automation using cron
-* Infrastructure documentation
 
 ---
 
