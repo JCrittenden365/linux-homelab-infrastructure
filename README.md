@@ -135,7 +135,7 @@ Project documentation can be found in the following sections:
 
 Example lab addressing:
 
-Debian Server: 192.168.1.147
+Debian Server:    192.168.1.147
 Ubuntu Server VM: 192.168.1.122
 
 Multiple users connect to these systems using secure SSH authentication.
@@ -176,3 +176,9 @@ This project is part of an ongoing effort to build professional-level Linux admi
   
 
 Each document explains not only *how* a configuration was implemented, but also *why* it is important in real-world environments.
+
+---
+
+**Note:** This lab was built to practice real Linux administration, security hardening, and troubleshooting.  
+All configurations are performed manually to reinforce foundational skills.  
+Future improvements will expand automation and monitoring across multi-server setups.
