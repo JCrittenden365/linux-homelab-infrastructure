@@ -10,6 +10,53 @@ The goal of this project is to build real-world experience with Linux systems wh
 
 ---
 
+## Lab Environment
+
+This project was built using a small home lab designed to practice real-world Linux system administration tasks such as SSH hardening, firewall configuration, intrusion prevention, and automation.
+
+### Physical Systems
+
+| Device                | Role                                                             |
+| --------------------- | ---------------------------------------------------------------- |
+| Dell OptiPlex Desktop | Primary lab host and virtualization platform                     |
+| HP Laptop             | SSH client used for remote administration and key authentication |
+
+### Virtual Machines
+
+| System           | Purpose                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Debian Server    | Main lab server used for SSH configuration, user management, firewall rules, and Fail2Ban testing |
+| Ubuntu Server VM | Secondary system used to practice secure SSH configuration and multi-host administration          |
+
+### Networking
+
+| Component          | Details                          |
+| ------------------ | -------------------------------- |
+| Network Type       | Local home network               |
+| Access Method      | SSH remote administration        |
+| Key Authentication | ed25519 public/private key pairs |
+
+### Security Tools Implemented
+
+* SSH key authentication
+* SSH configuration hardening
+* Firewall rule management (UFW)
+* Intrusion prevention using Fail2Ban
+* Log monitoring and analysis
+* Cron-based system automation
+
+### Project Goals
+
+The goal of this lab is to simulate common tasks performed by junior Linux system administrators, including:
+
+* securing remote access
+* managing multiple users
+* monitoring authentication activity
+* detecting intrusion attempts
+* automating maintenance tasks
+
+---
+
 ## Quick Navigation
 
 Project documentation can be found in the following sections:
