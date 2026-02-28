@@ -10,6 +10,35 @@ The goal is to simulate a small multi-user Linux environment where tasks such as
 
 ---
 
+                Home Network
+                 192.168.1.0/24
+                       |
+                ┌─────────────┐
+                │  Router     │
+                └─────┬───────┘
+                      │
+        ┌──────────────────────────────┐
+        │ Dell OptiPlex (Host Machine) │
+        │ VirtualBox Hypervisor        │
+        └────────────┬─────────────────┘
+                     │
+        ┌──────────────────────────────┐
+        │ Debian Server VM             │
+        │ 192.168.1.147                │
+        │ SSH / UFW / Fail2Ban         │
+        └──────────────────────────────┘
+                     │
+        ┌──────────────────────────────┐
+        │ Ubuntu Server VM             │
+        │ 192.168.1.122                │
+        │ SSH Hardening Lab            │
+        └──────────────────────────────┘
+
+Clients:
+HP Laptop / Windows Desktop → SSH access
+
+---
+
 ## Hardware Used
 
 ### Dell OptiPlex Desktop
