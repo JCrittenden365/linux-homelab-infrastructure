@@ -197,4 +197,15 @@ docs/
 
 This project is part of an ongoing effort to build professional-level Linux administration skills while studying for IT certifications and pursuing a career path toward **System Administration and DevOps**.
 
+---
+
+## Future Improvements
+
+- Centralized logging
+- Automated backups
+- Docker container deployment
+- Infrastructure as Code experimentation
+- Monitoring with Prometheus/Grafana
+  
+
 Each document explains not only *how* a configuration was implemented, but also *why* it is important in real-world environments.
