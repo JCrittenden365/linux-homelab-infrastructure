@@ -10,6 +10,25 @@ The goal of this project is to build real-world experience with Linux systems wh
 
 ---
 
+## Quick Navigation
+
+Project documentation can be found in the following sections:
+
+| Topic                                                                      | Description                                      |
+| -------------------------------------------------------------------------- | ------------------------------------------------ |
+| [Lab Architecture](docs/lab-architecture.md)                               | Overview of the lab environment and systems      |
+| [Debian Server Setup](docs/debian-server-setup.md)                         | Initial installation and configuration           |
+| [Ubuntu Server VM](docs/ubuntu-server-setup.md)                            | Creation and setup of the Ubuntu virtual machine |
+| [SSH Passwordless Authentication](docs/ssh-passwordless-authentication.md) | Configuring ed25519 key authentication           |
+| [SSH Hardening](docs/ssh-hardening.md)                                     | Securing SSH access                              |
+| [UFW Firewall Configuration](docs/ufw-firewall-configuration.md)           | Firewall rules and protection                    |
+| [Fail2Ban Intrusion Prevention](docs/fail2ban-intrusion-prevention.md)     | Detecting and blocking brute-force attacks       |
+| [User Management](docs/user-management-and-ssh-access.md)                  | Multi-user SSH configuration                     |
+| [Cron Automation](docs/cron-automation-and-maintenance.md)                 | Automated maintenance scripts                    |
+| [Log Analysis](docs/log-analysis-and-monitoring.md)                        | Investigating system logs and events             |
+
+---
+
 ## Lab Environment
 
 ### Host Machine
