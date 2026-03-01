@@ -2,150 +2,96 @@
 
 ## Overview
 
-This home lab was built to practice Linux system administration, security hardening, and automation in a safe environment.
-
-The lab consists of a physical desktop system running virtual machines along with additional client machines used to simulate real SSH access from different systems.
-
-The goal is to simulate a small multi-user Linux environment where tasks such as SSH hardening, firewall configuration, intrusion detection, and automation can be practiced.
+This document describes the physical hardware, virtual machines, and network layout of the home lab. For a high-level project summary, see the [README](../README.md).
 
 ---
 
-                Home Network
-                 192.168.1.0/24
-                       |
-                ┌─────────────┐
-                │  Router     │
-                └─────┬───────┘
-                      │
-        ┌──────────────────────────────┐
-        │ Dell OptiPlex (Host Machine) │
-        │ VirtualBox Hypervisor        │
-        └────────────┬─────────────────┘
-                     │
-        ┌──────────────────────────────┐
-        │ Debian Server VM             │
-        │ 192.168.1.147                │
-        │ SSH / UFW / Fail2Ban         │
-        └──────────────────────────────┘
-                     │
-        ┌──────────────────────────────┐
-        │ Ubuntu Server VM             │
-        │ 192.168.1.122                │
-        │ SSH Hardening Lab            │
-        └──────────────────────────────┘
+## Physical Machines
 
-Clients:
-HP Laptop / Windows Desktop → SSH access
+### Dell Laptop — Primary Hardened Server
+
+- **OS:** Debian 12 (bare metal, not a VM)
+- **IP:** 192.168.1.147
+- **Role:** The core lab server where all major security configurations were applied
+
+Tasks performed on this machine:
+
+- Multi-user SSH access and key authentication
+- SSH hardening (`sshd_config`)
+- Firewall configuration (UFW)
+- Intrusion prevention (Fail2Ban)
+- Log analysis and monitoring
+- Cron automation and maintenance scripts
+
+System identity confirmed with `hostnamectl`:
+
+![System Identity](screenshots/System_Identity.png)
 
 ---
 
-## Hardware Used
+### HP Laptop — Main SSH Client
 
-### Dell OptiPlex Desktop
+- **OS:** Windows
+- **Role:** Primary client machine used to SSH into the Dell Laptop server
 
-Primary lab machine.
+Used for:
 
-Responsibilities:
-
-* Runs VirtualBox
-* Hosts the Ubuntu Server virtual machine
-* Used as a main SSH client for testing
-
----
-
-### HP Laptop
-
-Secondary client system used for:
-
-* SSH testing
-* Generating SSH keys
-* Testing passwordless authentication
+- Generating ed25519 SSH key pairs
+- Remote administration via the Windows OpenSSH client
+- Testing authentication behavior from a real separate machine
 
 ---
 
-## Servers
+### Dell Desktop — Virtualization Host
 
-### Debian Server
+- **OS:** Windows
+- **Role:** Hosts two virtual machines used for passwordless SSH practice and experimental testing
 
-This server was the first system configured in the lab and acts as the primary system administration practice machine.
+The Dell Desktop itself is not hardened or configured as a server — it is purely a VirtualBox host.
 
-Key tasks performed on this server:
-
-* Multi-user SSH access configuration
-* Passwordless SSH authentication
-* SSH hardening
-* Firewall configuration using UFW
-* Intrusion prevention using Fail2Ban
-* Log analysis and auditing
-* Cron automation and system maintenance scripts
-
-Example Address:
-
-Debian Server
-192.168.1.147
+![VirtualBox VMs](screenshots/VMs.png)
 
 ---
 
-### Ubuntu Server VM
+## Virtual Machines (hosted on Dell Desktop)
 
-The Ubuntu Server virtual machine was created later in the project to provide a second environment for testing configurations and comparing behavior across Linux distributions.
+Both VMs were used to practice passwordless SSH authentication and to run experiments safely without touching the main hardened server.
 
-This VM is hosted on the Dell OptiPlex using VirtualBox.
+### Debian VM
 
-Example Address:
+- Used to practice SSH key setup and passwordless login
+- Secondary environment for safe configuration testing
 
-Ubuntu Server VM
-192.168.1.122
+### Ubuntu Server VM — `192.168.1.122`
 
----
+- Used alongside the Debian VM to practice multi-host SSH administration
+- Allowed comparison of behavior between Debian and Ubuntu
 
-## User Accounts
-
-Multiple users were created to simulate a real multi-user Linux environment.
-
-Each user was configured with their own SSH key for secure login.
+See [Ubuntu Server Setup](ubuntu-server-setup.md) for configuration details.
 
 ---
 
 ## SSH Access Model
 
-The lab uses **SSH key authentication instead of passwords**.
+All client machines authenticate using **ed25519 SSH key pairs** — no password authentication.
 
-Each client machine generates an ed25519 key pair.
-
-The public key is copied to the server in:
+Public keys are stored on each server in:
 
 ```
 ~/.ssh/authorized_keys
 ```
 
-Permissions are restricted to ensure SSH security requirements are met.
-
-Example permissions:
+Required permissions:
 
 ```
-~/.ssh
-700
+~/.ssh                 → 700
+~/.ssh/authorized_keys → 600
 ```
 
-```
-authorized_keys
-600
-```
+SSH config files on the HP Laptop client simplify connecting to multiple hosts without specifying the key manually each time. See [SSH Passwordless Authentication](ssh-passwordless-authentication.md) for setup details.
 
 ---
 
-## Purpose of the Lab
+## User Accounts
 
-This lab environment was created to practice real Linux system administration tasks including:
-
-* Secure remote access
-* User management
-* Firewall configuration
-* Intrusion detection
-* Log monitoring
-* System automation
-* troubleshooting authentication issues
-
-All configurations were performed manually to better understand how Linux systems behave in real environments.
-
+Multiple users were created on the Dell Laptop (Debian 12 server) to simulate a real multi-user environment. Each user has their own SSH key. See [User Management](user-management-and-ssh-access.md) for details.
