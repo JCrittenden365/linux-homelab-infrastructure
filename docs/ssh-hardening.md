@@ -1,184 +1,83 @@
-
 # SSH Hardening
 
 ## Overview
 
-After configuring passwordless SSH authentication, the next step in the lab was to harden the SSH service.
-
-SSH hardening reduces the attack surface of the server and protects against common threats such as:
-
-* brute force login attempts
-* password guessing attacks
-* unauthorized root access
-
-These configurations were tested in a home lab environment to simulate basic Linux server security practices.
+After confirming key-based authentication was working, the SSH service was hardened to reduce the server's attack surface. These settings were applied to `/etc/ssh/sshd_config` on the Dell Laptop (Debian 12 server).
 
 ---
 
-## Checking the SSH Configuration File
+## Configuration Changes
 
-The SSH daemon configuration file is located at:
+The config file was edited with:
 
-```
-/etc/ssh/sshd_config
-```
-
-The configuration was edited using:
-
-```
+```bash
 sudo nano /etc/ssh/sshd_config
 ```
 
-Before restarting the service, the configuration was validated using:
-
-```
-sudo sshd -t
-```
-
-This verifies that the configuration contains no syntax errors.
-
----
-
-## Disable Root Login
-
-Direct root login through SSH is considered insecure.
-
-Configuration:
+Key settings applied:
 
 ```
 PermitRootLogin no
-```
-
-This forces administrators to log in using a normal user account and escalate privileges using sudo.
-
----
-
-## Disable Password Authentication
-
-Once SSH keys were confirmed working, password authentication was disabled.
-
-Configuration:
-
-```
 PasswordAuthentication no
+KbdInteractiveAuthentication no
+AllowUsers josh carrie alex
 ```
 
-This prevents attackers from attempting password-based brute force attacks.
+> **Note:** `KbdInteractiveAuthentication` replaces the deprecated `ChallengeResponseAuthentication` directive in OpenSSH 9.x and later.
+
+Configuration as applied in the editor:
+
+![SSH Hardening Config](screenshots/SSH_Hardening.png)
 
 ---
 
-## Disable Challenge Response Authentication
+## Validating and Restarting
 
-Challenge-response authentication was also disabled.
+Before restarting, the configuration was tested for syntax errors:
 
-Configuration:
-
-```
-ChallengeResponseAuthentication no
-```
-
-This prevents alternate password authentication methods from being used.
-
----
-
-## Restrict Allowed Users
-
-SSH access was restricted to specific users.
-
-Configuration:
-
-```
-AllowUsers user1 user2 user3
-```
-
-This prevents other system accounts from attempting to log in via SSH.
-
----
-
-## Restarting the SSH Service
-
-After configuration changes were made, the SSH service was restarted.
-
-Example:
-
-```
-sudo systemctl restart ssh
-```
-
-Service status can be verified with:
-
-```
-sudo systemctl status ssh
-```
-
----
-
-## Testing Configuration Changes
-
-After applying hardening settings, SSH access was tested from client machines.
-
-Successful login:
-
-```
-ssh user@192.168.1.147
-```
-
-Testing ensured:
-
-* authorized users could log in
-* password authentication was disabled
-* key-based authentication functioned correctly
-
----
-
-## Troubleshooting
-
-Several issues were encountered during testing.
-
-### Connection Refused
-
-This can occur if the SSH service is not running or if the configuration contains errors.
-
-Verification command:
-
-```
-sudo systemctl status ssh
-```
-
-Configuration validation:
-
-```
+```bash
 sudo sshd -t
 ```
 
+The SSH service was then restarted:
+
+```bash
+sudo systemctl restart ssh
+```
+
+Service confirmed running:
+
+![SSH Service Status](screenshots/SSH_Service_Status.png)
+
 ---
 
-### User Access Restrictions
+## What Each Setting Does
 
-When the `AllowUsers` directive is used, any user not listed will be denied access.
-
-This was observed during testing when certain users could not connect until the configuration was corrected.
+| Setting                           | Effect                                                              |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `PermitRootLogin no`              | Forces use of a regular account; root must use sudo                 |
+| `PasswordAuthentication no`       | Disables password logins; key auth only                             |
+| `KbdInteractiveAuthentication no` | Disables alternative keyboard-interactive auth methods              |
+| `AllowUsers josh carrie alex`     | Restricts SSH access to listed users only                           |
 
 ---
 
-## Security Improvements
+## Testing After Hardening
 
-These changes significantly improve the security posture of the server:
+SSH access was tested from the client after each change to confirm authorized users could still connect and that password auth was rejected.
 
-* Root login disabled
-* Password authentication disabled
-* SSH restricted to authorized users
-* SSH configuration validated before restart
+Successful connection:
 
-Combined with additional protections such as firewall rules and intrusion detection, this provides a strong baseline for secure remote administration.
+![SSH Connect](screenshots/SSH_Connect.png)
+
+Clean disconnect:
+
+![SSH Disconnect](screenshots/SSH_Disconnect.png)
 
 ---
 
 ## Lessons Learned
 
-Key takeaways from this lab:
-
-* SSH configuration must always be validated before restarting the service
-* Disabling password authentication greatly reduces attack risk
-* User access restrictions help limit exposure
-* Testing after each change prevents accidental lockouts
+- Always run `sudo sshd -t` before restarting — a config error can lock you out
+- Test from a second terminal session before closing the first after applying changes
+- `AllowUsers` is an easy way to limit exposure without complex PAM configuration
