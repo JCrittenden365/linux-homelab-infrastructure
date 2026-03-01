@@ -1,102 +1,51 @@
-
 # Ubuntu Server Setup
 
 ## Overview
 
-This document explains how the Ubuntu Server virtual machine was created and configured for the home lab.
+This document covers the Ubuntu Server VM hosted on the **Dell Desktop** using VirtualBox. Unlike the main Dell Laptop server, this VM was not fully hardened — it was used primarily to practice passwordless SSH authentication and to run experimental configurations safely.
 
-The Ubuntu server acts as a **secondary Linux host** used for testing remote administration and practicing multi-server management.
-
----
-
-# Virtual Machine Environment
-
-The Ubuntu server runs as a virtual machine on the Dell OptiPlex lab computer using **VirtualBox**.
-
-Purpose of the VM:
-
-* practice server deployment
-* compare Linux distributions
-* simulate managing multiple systems
+For hardware and network context, see [Lab Architecture](lab-architecture.md).
 
 ---
 
-# Operating System
+## Virtual Machine Setup
 
-Ubuntu Server 24.04 LTS
+The Ubuntu Server VM was created in VirtualBox on the Dell Desktop alongside a Debian VM.
 
-The system was installed using the **minimal server installation** option.
+![VirtualBox VMs](screenshots/VMs.png)
 
-Installed components include:
-
-* OpenSSH Server
-* standard utilities
-
-No graphical interface was installed.
+**OS:** Ubuntu Server 24.04 LTS  
+**Installation type:** Minimal server install  
+**Components installed:** OpenSSH Server, standard utilities  
+**Graphical interface:** Not installed
 
 ---
 
-# Network Configuration
+## Network
 
-After installation the server received an IP address on the local network.
-
-Example IP:
+The VM received an IP address on the local network via DHCP.
 
 ```
 192.168.1.122
 ```
 
-This allows the server to be accessed remotely using SSH.
+SSH is the only remote access method used.
 
 ---
 
-# Remote Administration
+## SSH Key Authentication
 
-SSH is the primary management method.
+Passwordless SSH authentication was configured so the HP Laptop client could log in without a password. This followed the same key setup process used on the main Debian server.
 
-Example connection:
-
-```
-ssh user1@192.168.1.122
-```
-
-Passwordless login was later configured using SSH keys.
+Refer to [SSH Passwordless Authentication](ssh-passwordless-authentication.md) for the full process.
 
 ---
 
-# SSH Key Authentication
+## Purpose in the Lab
 
-Public key authentication was configured so the administrator can log in without entering a password.
+The Ubuntu VM (along with the Debian VM on the same Desktop) served as a safe sandbox for:
 
-Keys are stored in:
-
-```
-~/.ssh/authorized_keys
-```
-
-This allows secure and convenient remote administration.
-
----
-
-# Security Hardening
-
-Basic SSH security improvements were applied including:
-
-* disabling password authentication
-* verifying key-based login
-* restricting unnecessary access
-
-These changes help protect the system from unauthorized login attempts.
-
----
-
-# Purpose of This Server
-
-The Ubuntu VM allows the lab environment to simulate **multiple systems communicating over a network**.
-
-This helps practice skills such as:
-
-* managing remote servers
-* troubleshooting SSH connections
-* testing configuration differences between Linux distributions
-* learning multi-system administration
+- Practicing SSH key setup without risk to the main hardened server
+- Testing configurations and observing results before applying them to the Dell Laptop
+- Multi-host SSH administration from the HP Laptop client
+- Comparing behavior between Ubuntu and Debian in a controlled environment
