@@ -1,151 +1,95 @@
-
 # User Management and SSH Access
 
 ## Overview
 
-One of the key goals of this lab was to simulate a real Linux server environment where multiple users can securely access a system using SSH.
-
-This required creating user accounts, configuring SSH key authentication, and ensuring proper permissions were applied to each user's `.ssh` directory.
+Multiple user accounts were created on the Dell Laptop (Debian 12 server) to simulate a real multi-user Linux environment. Each user was configured with their own SSH key for secure, independent access.
 
 ---
 
 ## Creating User Accounts
 
-Users were created on the Debian server using the standard Linux user management tools.
-
-Example:
-
-```
-sudo adduser user1
-sudo adduser user2
+```bash
+sudo adduser carrie
+sudo adduser alex
 ```
 
-This automatically created the user home directories:
+This creates home directories at `/home/carrie` and `/home/alex` automatically.
 
-```
-/home/user1
-/home/user2
-```
+Users confirmed in `/etc/passwd`:
 
-Each user received their own login shell and environment.
+![User Management](screenshots/User_Management.png)
 
 ---
 
 ## Preparing SSH Directories
 
-For key authentication to work, each user requires a properly configured `.ssh` directory.
+Each user needs a properly configured `.ssh` directory before key authentication will work.
 
-```
-sudo mkdir -p /home/user1/.ssh
-sudo mkdir -p /home/user2/.ssh
-```
-
-Permissions were restricted for security:
-
-```
-sudo chmod 700 /home/user1/.ssh
-sudo chmod 700 /home/user2/.ssh
+```bash
+sudo mkdir -p /home/carrie/.ssh
+sudo chmod 700 /home/carrie/.ssh
+sudo chown carrie:carrie /home/carrie/.ssh
 ```
 
-Ownership was set to the correct user:
-
-```
-sudo chown user1:user1 /home/user1/.ssh
-sudo chown user2:user2 /home/user2/.ssh
-```
+Repeat for each user.
 
 ---
 
-## SSH Key Authentication
+## Installing SSH Keys
 
-SSH keys were generated on the client machine using the ED25519 algorithm.
+Keys were generated on the client for each user (see [SSH Passwordless Authentication](ssh-passwordless-authentication.md)) and then placed in each user's `authorized_keys` file:
 
-Example:
+```bash
+sudo nano /home/carrie/.ssh/authorized_keys
+# paste carrie's public key
 
-```
-ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_user1
-```
-
-The public key was copied to the server and placed in:
-
-```
-/home/user1/.ssh/authorized_keys
+sudo chmod 600 /home/carrie/.ssh/authorized_keys
+sudo chown carrie:carrie /home/carrie/.ssh/authorized_keys
 ```
 
-Permissions were then restricted:
+File permissions and key contents verified:
 
-```
-chmod 600 authorized_keys
-```
+![File Permissions](screenshots/File_Permissions.png)
 
 ---
 
-## Client SSH Configuration
+## Client SSH Config
 
-To simplify SSH connections, a local SSH config file was created on the client system.
-
-Example:
+To simplify connecting as different users, entries were added to the client SSH config file:
 
 ```
-Host lab-user1
+Host lab-carrie
     HostName 192.168.1.147
-    User user1
-    IdentityFile ~/.ssh/id_ed25519_user1
+    User carrie
+    IdentityFile ~/.ssh/id_ed25519_carrie
+
+Host lab-alex
+    HostName 192.168.1.147
+    User alex
+    IdentityFile ~/.ssh/id_ed25519_alex
 ```
 
-This allows login using:
+Each user can then connect with:
 
+```bash
+ssh lab-carrie
+ssh lab-alex
 ```
-ssh lab-user1
-```
-
-instead of specifying the key manually.
 
 ---
 
-## Troubleshooting Encountered
+## Restricting SSH Access
 
-During setup, several issues occurred that required troubleshooting.
-
-### Empty authorized_keys File
-
-At one point, the `authorized_keys` file for user1 was empty.
-This caused SSH login attempts to fail with:
+The `AllowUsers` directive in `sshd_config` on the Dell Laptop ensures only the configured users can connect via SSH:
 
 ```
-Permission denied (publickey)
+AllowUsers josh carrie alex
 ```
 
-After verifying the file contents using:
-
-```
-cat /home/user1/.ssh/authorized_keys
-```
-
-the public key was correctly re-added and permissions verified.
+Any system account not listed is denied SSH access. See [SSH Hardening](ssh-hardening.md) for the full configuration.
 
 ---
 
-### Key Not Automatically Selected
+## Troubleshooting
 
-Another issue occurred where SSH only worked when manually specifying the key:
-
-```
-ssh -i ~/.ssh/id_ed25519_user2 user2@server
-```
-
-This was resolved by adding the key to the SSH client configuration file.
-
----
-
-## Lessons Learned
-
-This exercise demonstrated several important system administration concepts:
-
-* Linux user management
-* SSH key authentication
-* secure file permissions
-* troubleshooting authentication failures
-* simplifying SSH access using client configuration files
-
-These skills are essential for securely managing remote Linux servers.
+Issues encountered during this setup (empty `authorized_keys`, wrong key being selected) are documented in the [Troubleshooting Journal](troubleshooting-journal.md).
