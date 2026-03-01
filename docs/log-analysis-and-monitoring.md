@@ -1,165 +1,94 @@
-
 # Log Analysis and Monitoring
 
 ## Overview
 
-Monitoring system logs is one of the most important responsibilities of a Linux system administrator. Logs provide visibility into system activity, authentication attempts, service errors, and potential security incidents.
-
-In this lab environment, log analysis was used to:
-
-* Investigate SSH login attempts
-* Monitor system services
-* Identify authentication failures
-* Observe security events triggered by Fail2Ban
-
-Understanding how to read and interpret logs is essential for detecting problems and responding to incidents.
+Log monitoring is one of the most important responsibilities of a Linux system administrator. In this lab, logs on the Dell Laptop were used to investigate SSH login behavior, verify security tool activity, and observe system events in real time.
 
 ---
 
 ## Common Log Locations
 
-Linux stores logs in the `/var/log` directory.
+Linux stores logs in `/var/log`. Key files used in this lab:
 
-Example:
+| Log File   | Purpose                                          |
+| ---------- | ------------------------------------------------ |
+| `auth.log` | Authentication events — SSH logins, sudo usage   |
+| `syslog`   | General system messages                          |
+| `kern.log` | Kernel-related messages                          |
+| `dmesg`    | Hardware and boot messages                       |
 
-```
-cd /var/log
-ls
-```
-
-Some commonly used log files include:
-
-| Log File | Purpose                                        |
-| -------- | ---------------------------------------------- |
-| auth.log | Authentication events (SSH logins, sudo usage) |
-| syslog   | General system messages                        |
-| kern.log | Kernel-related messages                        |
-| dmesg    | Hardware and kernel boot messages              |
-
-Not every Linux distribution stores logs in the same file names, but most follow a similar structure.
+> Log file names can vary between distributions. Ubuntu and Debian typically use `auth.log` for authentication events.
 
 ---
 
 ## Viewing Authentication Logs
 
-Authentication activity can be reviewed using:
-
-```
+```bash
 sudo cat /var/log/auth.log
 ```
 
-This file records:
-
-* Successful SSH logins
-* Failed login attempts
-* sudo command usage
-* user authentication activity
-
-Example entry:
+Example of a successful key-based login:
 
 ```
-Accepted publickey for user2 from 192.168.1.100 port 52133 ssh2
+Accepted publickey for josh from 192.168.1.107 port 22630 ssh2: ED25519 SHA256:...
 ```
-
-This indicates that a successful SSH login occurred using public key authentication.
 
 ---
 
-## Monitoring Logs in Real Time
+## Real-Time Monitoring
 
-To monitor activity as it happens:
-
-```
+```bash
 sudo tail -f /var/log/auth.log
 ```
 
-This command continuously displays new log entries as they are written.
-
-This is useful when:
-
-* testing SSH login behavior
-* observing authentication failures
-* verifying security tools like Fail2Ban
+This streams new log entries as they are written — useful when testing login behavior or watching Fail2Ban in action.
 
 ---
 
 ## Using journalctl
 
-Many modern Linux systems use `systemd`, which stores logs in a system journal.
+On systemd-based systems, logs are also available through the journal:
 
-Example:
-
-```
-sudo journalctl
+```bash
+sudo journalctl -u ssh -n 20
 ```
 
-To view logs for a specific service:
+This shows the last 20 SSH-related log entries. Real output from the lab:
 
-```
-sudo journalctl -u ssh
-```
+![Log Monitoring](screenshots/Log_Monitoring.png)
 
-Recent entries can be viewed using:
-
-```
-sudo journalctl -u ssh -n 50
-```
-
-This command displays the last 50 SSH-related log entries.
+The journal shows accepted logins, disconnections, sudo commands run, and the services accessed during the session.
 
 ---
 
 ## Detecting Failed Login Attempts
 
-Repeated failed login attempts may indicate:
+```bash
+grep "Failed password" /var/log/auth.log
+```
 
-* incorrect credentials
-* misconfigured SSH keys
-* automated attack attempts
-
-Example log entry:
+Example entry:
 
 ```
 Failed password for invalid user admin from 192.168.1.55 port 40322 ssh2
 ```
 
-Monitoring these logs allows administrators to quickly identify suspicious behavior.
+Repeated entries from the same IP indicate a brute-force attempt. This is exactly what Fail2Ban monitors and responds to automatically.
 
 ---
 
 ## Monitoring Fail2Ban Activity
 
-Fail2Ban automatically monitors logs and blocks IP addresses that repeatedly fail authentication attempts.
-
-Fail2Ban status can be checked using:
-
-```
-sudo fail2ban-client status
-```
-
-To view SSH protection details:
-
-```
+```bash
 sudo fail2ban-client status sshd
 ```
 
-This shows:
-
-* currently banned IP addresses
-* number of failed attempts detected
-* configured protection rules
+This shows currently banned IPs, total bans, and the number of failures detected. See [Fail2Ban Intrusion Prevention](fail2ban-intrusion-prevention.md) for details.
 
 ---
 
 ## Lessons Learned
 
-Through this lab, several important concepts were demonstrated:
-
-* how Linux stores system logs
-* how to inspect authentication activity
-* how to monitor logs in real time
-* how security tools like Fail2Ban rely on log analysis
-
-Effective log monitoring allows system administrators to detect problems early and respond quickly to potential security threats.
-
-Log analysis is one of the most valuable diagnostic and security skills for managing Linux systems.
+- `journalctl -u ssh` is often more readable than raw `auth.log` on modern systems
+- Real-time monitoring with `tail -f` is the fastest way to confirm a configuration change is working
+- Logs are the first place to look when something unexpected happens — developing the habit of reading them is as important as the tooling itself
