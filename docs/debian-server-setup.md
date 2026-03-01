@@ -1,152 +1,68 @@
-
 # Debian Server Setup
 
 ## Overview
 
-This document explains how the primary Debian lab server was installed and configured for the home lab environment.
+This document covers the initial setup of the primary lab server — a **Dell Laptop running Debian 12 on bare metal** (not a VM). This is the machine where all major security hardening, monitoring, and automation was configured.
 
-This server acts as the **main administration and security testing system** where SSH configuration, firewall management, monitoring, and automation labs are performed.
-
----
-
-# System Role
-
-Primary purposes of this server:
-
-* SSH security practice
-* firewall configuration
-* log monitoring
-* Fail2Ban intrusion detection
-* system automation using cron
-* Linux user management
+For hardware and network context, see [Lab Architecture](lab-architecture.md).
 
 ---
 
-# System Information
+## Why a Physical Machine?
 
-Operating System: Debian 12
-Role: Primary Linux Lab Server
-Environment: Home Lab Virtual / Local Network
-
-Example server IP:
-
-```
-192.168.1.147
-```
+Using a real laptop as the server (rather than a VM) means the environment more closely resembles a real-world administration scenario — the machine is always on, has its own hardware identity, and is accessed entirely over the network from the HP Laptop client.
 
 ---
 
-# Initial Installation
+## Installation
 
-Debian was installed using the standard installer with minimal packages.
+Debian 12 was installed using the standard installer with minimal packages selected.
 
-During installation the following decisions were made:
+Choices made during installation:
 
-* OpenSSH Server installed
-* standard system utilities installed
-* graphical desktop environment NOT installed
+- OpenSSH Server — installed
+- Standard system utilities — installed
+- Graphical desktop — **not installed**
 
-This keeps the system lightweight and focused on administration tasks.
-
----
-
-# User Accounts
-
-Three users were created for testing multi-user SSH access.
-
-| User   | Role          |
-| ------ | ------------- |
-| user1  | administrator |
-| user2  | standard user |
-| user3  | standard user |
-
-The **user1** account is used for system administration and has sudo privileges.
+Keeping the system headless keeps it lightweight and focused on server administration.
 
 ---
 
-# SSH Configuration
+## System Identity
 
-SSH is used as the primary method for managing the server.
-
-Key features configured:
-
-* public key authentication
-* password authentication disabled
-* user access control
-* multi-user SSH key setup
-
-Each user has their own SSH key stored in:
-
-```
-~/.ssh/authorized_keys
+```bash
+hostnamectl
 ```
 
-This allows secure passwordless login.
+![System Identity](screenshots/System_Identity.png)
+
+The hostname `lab-server` was set during installation to clearly identify this machine in logs and SSH sessions.
 
 ---
 
-# Firewall Configuration
+## User Accounts
 
-The server firewall is managed using UFW.
+Three users were created to simulate a real multi-user environment.
 
-Basic configuration:
+| User   | Role                                   |
+| ------ | -------------------------------------- |
+| josh   | Primary administrator with sudo access |
+| carrie | Standard user                          |
+| alex   | Standard user                          |
 
-```
-sudo ufw allow ssh
-sudo ufw enable
-```
-
-Default policy:
-
-* deny incoming
-* allow outgoing
-
-This protects the server while still allowing administrative SSH access.
+Full user management and SSH key setup is documented in [User Management](user-management-and-ssh-access.md).
 
 ---
 
-# Intrusion Protection
+## Services Configured
 
-Fail2Ban was installed to monitor login attempts and protect the server from brute-force attacks.
+All major configurations on this server are documented separately:
 
-Fail2Ban watches authentication logs and temporarily bans IP addresses after repeated failed login attempts.
-
----
-
-# Logging and Monitoring
-
-System logs are monitored using tools such as:
-
-```
-journalctl
-tail
-cat
-```
-
-Important logs include:
-
-```
-/var/log/auth.log
-```
-
-These logs help detect suspicious login activity.
-
----
-
-# Automation
-
-Cron jobs were implemented for:
-
-* automated logging
-* maintenance tasks
-* testing scheduled automation
-
-This allows routine administrative tasks to run automatically.
-
----
-
-# Purpose of This Server
-
-This Debian server acts as the **core learning platform** for practicing real-world Linux administration tasks in a safe environment.
-
-It provides a place to experiment with system configuration, security practices, and troubleshooting techniques.
+| Service  | Document                                                              |
+| -------- | --------------------------------------------------------------------- |
+| SSH      | [SSH Passwordless Authentication](ssh-passwordless-authentication.md) |
+| SSH      | [SSH Hardening](ssh-hardening.md)                                     |
+| UFW      | [UFW Firewall Configuration](ufw-firewall-configuration.md)           |
+| Fail2Ban | [Fail2Ban Intrusion Prevention](fail2ban-intrusion-prevention.md)     |
+| Cron     | [Cron Automation](cron-automation-and-maintenance.md)                 |
+| Logging  | [Log Analysis and Monitoring](log-analysis-and-monitoring.md)         |
