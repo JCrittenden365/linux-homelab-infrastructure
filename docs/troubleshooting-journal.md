@@ -2,228 +2,136 @@
 
 ## Overview
 
-This document records problems encountered while building the Linux home lab environment and explains how each issue was diagnosed and resolved.
-
-The purpose of this journal is to document real troubleshooting scenarios and the steps taken to investigate and fix them.
-
-Troubleshooting is an important skill for system administrators because systems rarely behave perfectly during initial configuration.
+This journal records real problems encountered while building the lab and the steps taken to diagnose and resolve each one. Troubleshooting is documented here as its own skill — systems rarely behave perfectly during initial configuration.
 
 ---
 
-# Issue 1 — SSH Key Authentication Failing
+## Issue 1 — SSH Key Authentication Failing
 
-## Problem
-
-SSH login attempts for the user **user2** resulted in the following error:
+**Symptom:**
 
 ```
 Permission denied (publickey)
 ```
 
-Even though SSH keys had been generated and copied to the server.
+SSH login for a user failed despite keys having been generated.
+
+**Investigation:**
+
+```bash
+ssh -vvv josh@192.168.1.147          # verbose output revealed no key was being offered
+cat /home/user/.ssh/authorized_keys  # file was empty
+```
+
+**Root Cause:**
+
+The public key had not been correctly copied into `authorized_keys`.
+
+**Resolution:**
+
+```bash
+sudo nano /home/user/.ssh/authorized_keys   # pasted correct public key
+chmod 600 /home/user/.ssh/authorized_keys
+chown user:user /home/user/.ssh -R
+```
+
+Login succeeded after correcting the file.
 
 ---
 
-## Investigation
+## Issue 2 — SSH Login Only Worked With `-i` Flag
 
-The following steps were used to diagnose the issue:
+**Symptom:**
 
-1. Checked SSH debug output using:
+This worked:
 
-```
-ssh -vvv user2@server-ip
-```
-
-2. Verified the contents of the authorized keys file:
-
-```
-cat /home/user2/.ssh/authorized_keys
+```bash
+ssh -i ~/.ssh/id_ed25519_josh josh@server-ip
 ```
 
-3. The file returned **no output**, indicating that the key had not been copied correctly.
+But this failed:
 
----
-
-## Root Cause
-
-The `authorized_keys` file for the user2 user was empty, meaning the server had no public key available for authentication.
-
----
-
-## Resolution
-
-The correct public key was copied into the file:
-
-```
-sudo nano /home/user2/.ssh/authorized_keys
+```bash
+ssh josh@server-ip
 ```
 
-File permissions were then verified:
+**Investigation:**
 
-```
-chmod 700 /home/user2/.ssh
-chmod 600 /home/user2/.ssh/authorized_keys
-chown user2:user2 /home/user2/.ssh -R
+```bash
+ssh -vvv josh@server-ip
 ```
 
-After correcting the file contents and permissions, passwordless login worked successfully.
+Verbose output showed the SSH client was not offering the correct key automatically.
 
----
+**Root Cause:**
 
-# Issue 2 — SSH Login Only Worked With Identity File
+The key file used a custom name (`id_ed25519_josh`) rather than the SSH default (`id_ed25519`). The client only auto-loads default key names.
 
-## Problem
+**Resolution:**
 
-SSH login worked when specifying the identity file:
-
-```
-ssh -i ~/.ssh/id_ed25519_user1 user1@server-ip
-```
-
-But failed when using a normal connection:
-
-```
-ssh user1@server-ip
-```
-
----
-
-## Investigation
-
-SSH verbose mode was used to observe authentication behavior:
-
-```
-ssh -vvv user1@server-ip
-```
-
-The output showed that the SSH client was **not automatically selecting the correct key**.
-
----
-
-## Root Cause
-
-The SSH client configuration did not include an entry specifying which key should be used for the host.
-
----
-
-## Resolution
-
-An SSH config file was created on the client system:
-
-```
-~/.ssh/config
-```
-
-Example configuration:
+An SSH config entry was created on the client:
 
 ```
 Host lab-server
     HostName 192.168.1.147
-    User user1
-    IdentityFile ~/.ssh/id_ed25519_user1
+    User josh
+    IdentityFile ~/.ssh/id_ed25519_josh
 ```
 
-This allowed connections using a simple command:
-
-```
-ssh lab-server
-```
+After this, `ssh lab-server` worked without specifying the key manually.
 
 ---
 
-# Issue 3 — Missing SSH Directory on Windows Client
+## Issue 3 — Missing `.ssh` Directory on Windows Client
 
-## Problem
+**Symptom:**
 
-When attempting to generate new SSH keys, the system reported that the `.ssh` directory did not exist.
+`ssh-keygen` on the HP Laptop (Windows) reported that the `.ssh` directory did not exist.
 
----
+**Root Cause:**
 
-## Investigation
+The `.ssh` directory had never been created on the HP Laptop.
 
-The expected directory location was checked:
+**Resolution:**
 
-```
-C:\Users\<username>\.ssh
-```
-
-The directory was missing on the client machine.
-
----
-
-## Root Cause
-
-The SSH configuration directory had not yet been created on the Windows system.
-
----
-
-## Resolution
-
-The directory was created manually:
-
-```
+```powershell
 mkdir C:\Users\<username>\.ssh
 ```
 
-After creating the directory, SSH keys could be generated normally.
+Key generation then proceeded normally.
 
 ---
 
-# Issue 4 — Ubuntu Repository Warnings During Update
+## Issue 4 — Ubuntu Repository Warning During Update
 
-## Problem
-
-The Ubuntu server displayed warnings similar to:
+**Symptom:**
 
 ```
 Tried to start delayed item http://archive.ubuntu.com ... but failed
 ```
 
-during package updates.
+**Root Cause:**
 
----
+A temporary connectivity issue with one Ubuntu mirror repository.
 
-## Investigation
+**Resolution:**
 
-Repository configuration and network connectivity were checked.
+Running the update again resolved it:
 
-The system still successfully retrieved package lists from other mirrors.
-
----
-
-## Root Cause
-
-The warning was caused by a temporary issue contacting one of the Ubuntu mirror repositories.
-
----
-
-## Resolution
-
-Running the update command again resolved the issue:
-
-```
+```bash
 sudo apt update
 ```
 
-Package updates continued normally afterward.
+No further action was needed.
 
 ---
 
-# Lessons Learned
+## Key Debugging Tools Used
 
-Several important troubleshooting techniques were practiced during these exercises:
-
-* using verbose SSH output (`ssh -vvv`)
-* verifying file contents
-* checking file permissions
-* confirming directory structures
-* testing network connectivity
-* validating configuration files
-
-These troubleshooting skills are essential for diagnosing issues in Linux server environments.
-
----
-
-# Future Troubleshooting Notes
-
-Additional troubleshooting scenarios will be added to this journal as the lab environment grows and new systems are introduced.
+| Tool              | Purpose                                         |
+| ----------------- | ----------------------------------------------- |
+| `ssh -vvv`        | Verbose SSH output for diagnosing auth failures |
+| `cat authorized_keys` | Verify key file contents                    |
+| `chmod` / `chown` | Fix permission and ownership issues             |
+| `systemctl status` | Check service state                            |
+| `sudo sshd -t`    | Validate SSH config before restart              |
