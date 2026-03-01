@@ -1,174 +1,82 @@
-
 # UFW Firewall Configuration
 
 ## Overview
 
-After securing SSH access, the next step in the lab environment was configuring a host-based firewall.
-
-Ubuntu and Debian systems commonly use **UFW (Uncomplicated Firewall)** as a simplified interface for managing iptables firewall rules.
-
-The firewall was configured to:
-
-* allow secure remote administration via SSH
-* block all other incoming connections by default
-* provide a basic layer of network protection
-
-This configuration simulates how a typical Linux server is secured in a real environment.
+UFW (Uncomplicated Firewall) was configured on the Dell Laptop (Debian 12 server) to block all unsolicited inbound connections while allowing SSH administration. UFW provides a simplified interface for managing the underlying `iptables` rules.
 
 ---
 
-## Installing UFW
+## Default Policies
 
-First, verify whether UFW is installed.
+Before enabling the firewall, default traffic policies were set:
 
-Command:
-
-```
-sudo ufw status
-```
-
-If UFW is not installed, install it using:
-
-```
-sudo apt update
-sudo apt install ufw
-```
-
----
-
-## Default Firewall Policies
-
-Before enabling the firewall, default policies were configured.
-
-Command:
-
-```
+```bash
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 ```
 
-Explanation:
-
-* **deny incoming** → blocks all unsolicited connections
-* **allow outgoing** → allows the system to reach external services
-
-This creates a secure baseline.
+This creates a secure baseline — nothing gets in unless explicitly allowed.
 
 ---
 
-## Allowing SSH Access
+## Allowing SSH
 
-Since SSH is used to manage the server remotely, it must be allowed before enabling the firewall.
+SSH must be allowed **before** enabling the firewall to avoid locking out remote access:
 
-Command:
-
-```
+```bash
 sudo ufw allow ssh
 ```
 
-Alternatively, the port can be specified directly:
+This is equivalent to:
 
-```
+```bash
 sudo ufw allow 22/tcp
 ```
-
-This rule allows remote administrators to connect to the system.
 
 ---
 
 ## Enabling the Firewall
 
-Once SSH access is confirmed, the firewall can be enabled.
-
-Command:
-
-```
+```bash
 sudo ufw enable
 ```
 
-The system will warn that enabling the firewall may interrupt existing SSH connections. Because SSH was allowed beforehand, remote access remains functional.
+UFW warns that enabling may interrupt existing SSH connections. Since SSH was allowed first, this is not a concern.
 
 ---
 
-## Verifying Firewall Rules
+## Verifying the Rules
 
-Firewall rules can be verified using:
-
-```
+```bash
 sudo ufw status verbose
 ```
 
-Example output:
+![UFW Firewall Config](screenshots/UFW_Firewall_Config.png)
 
-```
-Status: active
+Numbered rule view:
 
-To      Action   From
---      ------   ----
-22/tcp  ALLOW    Anywhere
-```
-
-This confirms that the firewall is active and SSH access is permitted.
-
----
-
-## Testing Firewall Protection
-
-Testing was performed by verifying:
-
-* SSH access remained available
-* unauthorized ports were blocked
-
-Example connection attempt:
-
-```
-ssh user@192.168.1.147
-```
-
-Successful connection confirms the firewall rule is working correctly.
-
----
-
-## Additional Useful Commands
-
-List rules with numbering:
-
-```
+```bash
 sudo ufw status numbered
 ```
 
-Delete a rule:
+![UFW Status](screenshots/UFW_Status.png)
 
-```
-sudo ufw delete <rule_number>
-```
-
-Disable the firewall (if troubleshooting is required):
-
-```
-sudo ufw disable
-```
+Both IPv4 and IPv6 SSH access are permitted. All other inbound traffic is blocked by default.
 
 ---
 
-## Security Benefits
+## Additional Commands
 
-Using a host-based firewall provides several advantages:
-
-* blocks unnecessary open ports
-* reduces attack surface
-* provides simple rule management
-* adds an additional security layer
-
-When combined with SSH hardening and intrusion detection tools such as Fail2Ban, UFW helps form a basic defensive security posture.
+```bash
+sudo ufw status numbered        # view rules with index numbers
+sudo ufw delete <rule_number>   # remove a rule by number
+sudo ufw disable                # temporarily disable (for troubleshooting)
+```
 
 ---
 
 ## Lessons Learned
 
-Key takeaways from this lab:
-
-* Always allow SSH before enabling the firewall
-* Default deny policies improve server security
-* Firewall rules should be verified after configuration
-* Host-based firewalls are a standard security practice for Linux servers
+- Always allow SSH before enabling UFW — order matters
+- `ufw status verbose` gives more detail than `ufw status` alone
+- UFW integrates cleanly with Fail2Ban, which manages its own ban rules on top of UFW
