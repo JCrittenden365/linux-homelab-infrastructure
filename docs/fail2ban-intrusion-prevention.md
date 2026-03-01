@@ -1,136 +1,82 @@
-
 # Fail2Ban Intrusion Prevention
 
 ## Overview
 
-After configuring SSH hardening and firewall protection, the next security layer added to the lab environment was **Fail2Ban**.
-
-Fail2Ban is an intrusion prevention system that monitors system logs and automatically blocks IP addresses that show malicious behavior.
-
-In this lab, Fail2Ban was configured to protect the SSH service from brute-force login attacks.
+Fail2Ban was configured on the Dell Laptop (Debian 12 server) as the third layer of SSH protection, alongside key-based authentication and UFW. It monitors authentication logs and automatically bans IP addresses that exceed a defined number of failed login attempts.
 
 ---
 
-## What Fail2Ban Does
+## Installation
 
-Fail2Ban monitors log files for repeated authentication failures. If an IP address exceeds a defined number of failed login attempts, the system automatically blocks that IP address using firewall rules.
-
-Typical protections include:
-
-* brute-force SSH login attempts
-* automated attack scripts
-* repeated authentication failures
-
-The offending IP address is temporarily banned for a defined period of time.
-
----
-
-## Installing Fail2Ban
-
-Fail2Ban was installed using the package manager.
-
-Command:
-
-```
+```bash
 sudo apt update
 sudo apt install fail2ban
 ```
 
-After installation, the service automatically starts.
-
-Verify the service status:
-
-```
-sudo systemctl status fail2ban
-```
+Fail2Ban starts automatically after installation.
 
 ---
 
-## Default Configuration
+## Configuration
 
-Fail2Ban uses configuration files located in:
+Rather than editing `jail.conf` directly, a local override file was created:
 
-```
-/etc/fail2ban/
-```
-
-Important files include:
-
-* **jail.conf** → default configuration
-* **jail.local** → custom configuration
-
-Best practice is to avoid modifying `jail.conf` directly and instead create a `jail.local` file.
-
----
-
-## Creating a Local Configuration
-
-A custom configuration file was created:
-
-```
+```bash
 sudo nano /etc/fail2ban/jail.local
 ```
 
-Example configuration used for SSH protection:
+Configuration as applied:
 
-```
+![Fail2Ban Config](screenshots/f2b-config.png)
+
+```ini
 [sshd]
 enabled = true
 port = ssh
-logpath = /var/log/auth.log
+filter = sshd
+logpath = %(sshd_log)s
 maxretry = 3
-bantime = 600
-findtime = 600
+findtime = 10m
+bantime = 30m
+backend = systemd
 ```
 
-Explanation:
+| Setting     | Meaning                                              |
+| ----------- | ---------------------------------------------------- |
+| `maxretry`  | Failed attempts before a ban is triggered            |
+| `findtime`  | Time window in which failures are counted            |
+| `bantime`   | How long the IP is blocked                           |
+| `backend`   | Log source — `systemd` for modern Debian/Ubuntu      |
 
-* **enabled** → activates protection for SSH
-* **maxretry** → number of failed login attempts allowed
-* **bantime** → how long the attacker is blocked (seconds)
-* **findtime** → time window for counting failed attempts
+After saving, the service was restarted:
 
----
-
-## Restarting Fail2Ban
-
-After configuration changes, the Fail2Ban service was restarted.
-
-Command:
-
-```
+```bash
 sudo systemctl restart fail2ban
 ```
 
-Verify that the service is active:
+---
 
-```
+## Verifying Fail2Ban is Running
+
+```bash
 sudo systemctl status fail2ban
 ```
+
+![Fail2Ban Running Status](screenshots/f2b-running-status.png)
 
 ---
 
 ## Checking Active Jails
 
-Fail2Ban protections are organized into **jails**.
-
-To view active jails:
-
-```
+```bash
 sudo fail2ban-client status
 ```
 
-Example output:
+![Fail2Ban Client Status](screenshots/f2b-client-status.png)
 
-```
-Status
-|- Number of jail: 1
-`- Jail list: sshd
-```
+To inspect the SSH jail specifically:
 
-To inspect the SSH jail:
-
-```
+```bash
 sudo fail2ban-client status sshd
 ```
 
@@ -138,72 +84,34 @@ sudo fail2ban-client status sshd
 
 ## Simulating an Attack
 
-To test the system, multiple failed SSH login attempts were generated.
+Multiple failed SSH login attempts were generated from the HP Laptop to trigger a ban:
 
-Example test:
-
-```
+```powershell
 ssh fakeuser@192.168.1.147
 ```
 
-After several failed login attempts, Fail2Ban automatically banned the attacking IP.
+Before the ban triggered, repeated failures were visible in the logs:
+
+![Before Ban](screenshots/f2b-before.png)
+
+After enough failures, Fail2Ban blocked the IP automatically:
+
+![Banned IP](screenshots/Banned.png)
 
 ---
 
-## Viewing Banned IP Addresses
+## Unbanning an IP
 
-To see which IPs have been banned:
+If a legitimate user is accidentally banned:
 
-```
-sudo fail2ban-client status sshd
-```
-
-Example output:
-
-```
-Banned IP list: 192.168.1.100
-```
-
-This confirms that Fail2Ban detected the attack and blocked the source.
-
----
-
-## Unbanning an IP Address
-
-If a legitimate user is accidentally banned, the IP address can be removed.
-
-Command:
-
-```
+```bash
 sudo fail2ban-client set sshd unbanip <IP_ADDRESS>
 ```
-
-Example:
-
-```
-sudo fail2ban-client set sshd unbanip 192.168.1.100
-```
-
----
-
-## Security Benefits
-
-Fail2Ban adds an important layer of protection:
-
-* detects brute-force login attempts
-* automatically blocks malicious IPs
-* integrates with firewall rules
-* reduces noise in authentication logs
-
-When combined with SSH hardening and firewall rules, Fail2Ban helps create a layered security model.
 
 ---
 
 ## Lessons Learned
 
-Key takeaways from this lab:
-
-* Log monitoring can automatically detect attacks
-* Security tools can respond without administrator intervention
-* Intrusion prevention systems improve server resilience
-* Testing security tools helps verify real-world behavior
+- Setting `backend = systemd` is important on modern distros — `auto` can default incorrectly
+- Fail2Ban, UFW, and SSH hardening together form a solid layered defense
+- Live testing the ban behavior (watching it happen in real time) is the best way to confirm the configuration is actually working
