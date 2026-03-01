@@ -2,74 +2,50 @@
 
 ## Overview
 
-This document summarizes the key lessons and takeaways from building and managing the Linux home lab environment.  
-It reflects on real-world system administration practices, troubleshooting experiences, and security-focused tasks.
+This document summarizes the broader takeaways from building the lab — things that cut across multiple topics and shaped how the project evolved. Specific technical lessons are noted at the end of each individual document.
 
 ---
 
-## 1. Linux System Administration
+## 1. Hands-On Work Reveals What Reading Doesn't
 
-- Installing and configuring **Debian and Ubuntu servers** provides insight into differences between distributions.  
-- Managing **users, groups, and permissions** is critical for maintaining a secure multi-user environment.  
-- Understanding **file ownership and directory permissions** prevents common access issues.
+Documentation and tutorials explain how things should work. Actually configuring them reveals edge cases, permission quirks, and sequencing dependencies that don't show up in guides. Every issue in the [Troubleshooting Journal](troubleshooting-journal.md) was more educational than the configuration that preceded it.
 
 ---
 
-## 2. SSH and Access Security
+## 2. Order of Operations Matters
 
-- **SSH key-based authentication** is more secure than password authentication.  
-- **Passwordless login** requires careful configuration of `.ssh` directories and `authorized_keys` files.  
-- **SSH hardening** (disabling root login, restricting users) significantly reduces the attack surface.  
-- The SSH client config file simplifies key management for multiple users.
+Several tasks have a specific sequence that must be followed:
 
----
+- SSH keys must be working **before** disabling password authentication
+- SSH must be allowed in UFW **before** enabling the firewall
+- `sudo sshd -t` must pass **before** restarting the SSH service
 
-## 3. Firewall and Intrusion Prevention
-
-- **UFW** provides simple host-based firewall configuration; allowing SSH before enabling is critical.  
-- **Fail2Ban** monitors logs and blocks malicious IPs automatically, adding an extra layer of security.  
-- Combining **SSH hardening, UFW, and Fail2Ban** creates a **layered security model**.
+Getting the order wrong in any of these can lock you out of the system.
 
 ---
 
-## 4. Logging and Monitoring
+## 3. Layered Security Is More Than a Concept
 
-- Monitoring **auth.log**, `journalctl`, and system logs provides visibility into server activity.  
-- Logs are essential for **troubleshooting login issues** and **observing security events**.  
-- Regular log review builds **proactive security awareness**.
+Implementing SSH hardening, UFW, and Fail2Ban individually made sense on paper. Seeing them interact — Fail2Ban writing ban rules through UFW, logs showing blocked IPs, the Fail2Ban status reflecting real-time jail state — made the concept of defense-in-depth concrete rather than theoretical.
 
 ---
 
-## 5. Automation and Maintenance
+## 4. Documentation Is Part of the Work
 
-- **Cron jobs** automate routine tasks such as logging, maintenance scripts, and system checks.  
-- Separating **normal logs and error logs** improves troubleshooting efficiency.  
-- Even audit-only automation teaches the **importance of planning and monitoring tasks** before destructive actions.
+Writing these docs while configuring the systems reinforced the material and exposed gaps in understanding. If a step couldn't be explained clearly, it usually meant it wasn't fully understood yet.
 
 ---
 
-## 6. Troubleshooting Skills
+## 5. The Lab Is a Safe Place to Break Things
 
-- Real issues occurred, such as **empty authorized_keys files**, **missing `.ssh` directories**, and **SSH requiring manual key specification**.  
-- Using tools like `ssh -vvv`, file inspection, and permission checks were critical to diagnosing problems.  
-- Documenting each problem and solution improves reproducibility and understanding.  
+Every misconfiguration here is a lesson with no consequences beyond a VM reboot. The goal was to encounter real problems in a safe environment — and that happened repeatedly. That's the point.
 
 ---
 
-## 7. Professional Growth
+## Future Directions
 
-- Building this lab emphasized **hands-on learning** over memorization.  
-- Documenting processes and troubleshooting steps is just as important as configuring systems.  
-- Reflecting on errors and solutions develops **problem-solving and critical thinking skills**, which are essential for IT careers.  
-
----
-
-## 8. Future Takeaways
-
-- The home lab is a safe environment for **testing configurations, security settings, and automation scripts**.  
-- This lab will expand to include **centralized logging, container experiments, and advanced monitoring**.  
-- Screenshots, diagrams, and additional documentation will **strengthen the portfolio presentation** for potential employers.
-
----
-
-**End of Lessons Learned**
+- Centralized logging (currently planned)
+- Automated backups with verification
+- Docker container deployment
+- Infrastructure as Code (Ansible or Terraform)
+- Monitoring with Prometheus and Grafana
