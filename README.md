@@ -12,15 +12,15 @@ The goal of this project is to build real-world experience with Linux systems wh
 
 ## Skills Demonstrated
 
-Linux system administration  
-SSH configuration and hardening  
-Firewall configuration (UFW)  
-Intrusion detection and prevention (Fail2Ban)  
-User and access management  
-Log analysis and monitoring  
-Cron automation and system maintenance  
-Virtual machine infrastructure (VirtualBox)  
-Network troubleshooting and debugging
+* Linux system administration  
+* SSH configuration and hardening  
+* Firewall configuration (UFW)  
+* Intrusion detection and prevention (Fail2Ban)  
+* User and access management  
+* Log analysis and monitoring  
+* Cron automation and system maintenance  
+* Virtual machine infrastructure (VirtualBox)  
+* Network troubleshooting and debugging
 
 ---
 
@@ -168,11 +168,11 @@ This project is part of an ongoing effort to build professional-level Linux admi
 
 ## Future Improvements
 
-- Centralized logging
-- Automated backups
-- Docker container deployment
-- Infrastructure as Code experimentation
-- Monitoring with Prometheus/Grafana
+* Centralized logging
+* Automated backups
+* Docker container deployment
+* Infrastructure as Code experimentation
+* Monitoring with Prometheus/Grafana
   
 
 Each document explains not only *how* a configuration was implemented, but also *why* it is important in real-world environments.
@@ -181,4 +181,3 @@ Each document explains not only *how* a configuration was implemented, but also 
 
 **Note:** This lab was built to practice real Linux administration, security hardening, and troubleshooting.  
 All configurations are performed manually to reinforce foundational skills.  
-Future improvements will expand automation and monitoring across multi-server setups.
