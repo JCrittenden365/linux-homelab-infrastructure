@@ -2,217 +2,104 @@
 
 ## Overview
 
-In this lab, SSH key-based authentication was configured to allow secure logins to Linux servers without using passwords.
+SSH key-based authentication was configured to allow secure logins from the **HP Laptop (Windows client)** to the **Dell Laptop (Debian 12 server)** and the VMs on the Dell Desktop — all without passwords.
 
-Using SSH keys significantly improves security because:
+Key-based authentication is preferred over passwords because:
 
-* Passwords are not transmitted during login
-* Brute-force attacks are far less effective
-* Access can be tightly controlled per user
-
-This setup was implemented for multiple users in the lab environment.
+- No credentials are transmitted during login
+- Brute-force attacks are far less effective
+- Access is controlled per user via individual key pairs
 
 ---
 
 ## Environment
 
-Server:
-Debian Server
-192.168.1.147
-
-Client systems:
-Windows machines using the built-in OpenSSH client.
-
-Key type used:
-
-```
-ed25519
-```
-
-This key type was chosen because it is modern, secure, and recommended by most current SSH security guidelines.
+| Machine          | Role          | OS / IP            |
+| ---------------- | ------------- | ------------------ |
+| HP Laptop        | SSH Client    | Windows            |
+| Dell Laptop      | Primary Server| Debian 12 — 192.168.1.147 |
+| Debian VM        | Test Server   | Debian (VM on Dell Desktop) |
+| Ubuntu Server VM | Test Server   | Ubuntu — 192.168.1.122 |
 
 ---
 
-## Generating SSH Keys (Windows)
+## Key Generation (HP Laptop — Windows)
 
-Keys were generated using the Windows OpenSSH client.
+Keys were generated on the HP Laptop using the Windows built-in OpenSSH client.
 
-Example command:
-
-```
+```powershell
 ssh-keygen -t ed25519 -f $env:USERPROFILE\.ssh\id_ed25519_username -C "username@lab"
 ```
 
-This created two files:
+This produces two files:
 
-Private key
+| File                      | Purpose                       |
+| ------------------------- | ----------------------------- |
+| `id_ed25519_username`     | Private key — stays on client |
+| `id_ed25519_username.pub` | Public key — copied to server |
 
-```
-id_ed25519_username
-```
-
-Public key
-
-```
-id_ed25519_username.pub
-```
-
-The private key stays on the client machine.
-The public key is copied to the server.
+**ed25519** was chosen because it is modern, compact, and recommended by current SSH security guidelines.
 
 ---
 
 ## Installing the Public Key on the Server
 
-The public key must be placed in the user's `authorized_keys` file.
+The public key is placed in the target user's `authorized_keys` file on the Dell Laptop server.
 
-Example:
-
-```
-/home/user/.ssh/authorized_keys
-```
-
-Steps performed:
-
-1. Create the `.ssh` directory
-
-```
+```bash
 mkdir ~/.ssh
-```
-
-2. Set proper permissions
-
-```
 chmod 700 ~/.ssh
-```
-
-3. Add the public key to the authorized_keys file
-
-```
-nano ~/.ssh/authorized_keys
-```
-
-4. Set correct permissions
-
-```
+nano ~/.ssh/authorized_keys     # paste public key here
 chmod 600 ~/.ssh/authorized_keys
 ```
 
----
+File permissions confirmed:
 
-## Testing SSH Login
-
-The connection was tested from the Windows client.
-
-Example:
-
-```
-ssh -i $env:USERPROFILE\.ssh\id_ed25519_user user@192.168.1.147
-```
-
-Successful login indicates the server accepted the key.
+![File Permissions](screenshots/File_Permissions.png)
 
 ---
 
-## Troubleshooting Encountered
+## Testing the Connection
 
-Several issues occurred during setup that required troubleshooting.
+Login was tested from the HP Laptop (Windows):
 
-### Empty authorized_keys File
-
-During initial testing, the `authorized_keys` file for one user was empty.
-
-This prevented SSH authentication even though the key had been generated correctly.
-
-Verification command:
-
-```
-cat ~/.ssh/authorized_keys
+```powershell
+ssh -i $env:USERPROFILE\.ssh\id_ed25519_josh josh@192.168.1.147
 ```
 
-Fix:
+Successful passwordless login:
 
-The correct public key was copied into the file.
+![Passwordless Login](screenshots/Passwordless_Login.png)
 
 ---
 
-### SSH Using the Wrong Key
+## SSH Config File
 
-When connecting using:
+To avoid specifying the key file manually every time, an SSH config file was created on the HP Laptop:
 
-```
-ssh user@192.168.1.122
-```
-
-Authentication failed.
-
-However, the following worked:
+**Location:** `C:\Users\<username>\.ssh\config`
 
 ```
-ssh -i $env:USERPROFILE\.ssh\id_ed25519_user user@192.168.1.122
-```
-
-Reason:
-
-SSH only automatically loads default key names such as:
-
-```
-id_rsa
-id_ed25519
-```
-
-Because the key file had a custom name, it had to be specified manually.
-
----
-
-## SSH Config Shortcut
-
-To simplify login commands, an SSH config file was created on the client machine.
-
-Location:
-
-```
-C:\Users\<username>\.ssh\config
-```
-
-Example configuration:
-
-```
-Host lab-user
+Host lab-server
     HostName 192.168.1.147
-    User user
-    IdentityFile C:\Users\<username>\.ssh\id_ed25519_user
+    User josh
+    IdentityFile C:\Users\<username>\.ssh\id_ed25519_josh
 ```
 
-After creating this file, SSH connections could be made with:
+After this, connecting is as simple as:
 
-```
-ssh lab-user
+```powershell
+ssh lab-server
 ```
 
-This greatly simplifies connecting to multiple systems.
+This same approach was used to configure shortcuts for the VMs on the Dell Desktop.
 
 ---
 
-## Security Benefits
+## Troubleshooting
 
-Key-based authentication provides several important security advantages:
+Real issues encountered during setup are documented in the [Troubleshooting Journal](troubleshooting-journal.md), including:
 
-* No passwords transmitted over the network
-* Strong cryptographic authentication
-* Easier auditing of user access
-* Compatible with automation tools
-
-This configuration is widely used in production Linux environments.
-
----
-
-## Lessons Learned
-
-Key takeaways from this setup:
-
-* SSH permissions are strict and must be correct
-* The `authorized_keys` file must contain the correct public key
-* Custom key names require either `-i` or an SSH config entry
-* Debugging with `ssh -vvv` is extremely helpful when troubleshooting authentication problems
-
+- Empty `authorized_keys` file causing `Permission denied (publickey)`
+- SSH not automatically selecting a custom-named key file
+- Missing `.ssh` directory on the Windows client (HP Laptop)
