@@ -136,3 +136,7 @@ docs/
 ---
 
 **Note:** This lab was built to practice real Linux administration, security hardening, and troubleshooting. The primary server is a physical Dell Laptop running Debian 12 — not a VM. All configurations were performed manually to reinforce foundational skills.
+
+*Author*
+Josh Crittenden
+Aspiring IT professional focused on Linux, automation, and hands-on technical development
